@@ -1,14 +1,29 @@
 use std::env;
+use std::error::Error;
 use std::fs;
 use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let contents = Config::build(&args).unwrap_or_else(|err| {
+    let config = Config::build(&args).unwrap_or_else(|err| {
         println!("Problem parsing arguments {err}");
         process::exit(1);
     });
+
+    println!("searching for {}", config.query);
+    println!("in {}", config.file_path);
+
+    if let Err(e) = run(&config) {
+        println!("Application Error: {e}");
+        process::exit(1);
+    }
+}
+
+fn run(config: &Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(&config.file_path)?;
+    println!("with text: \n {}", contents);
+    Ok(())
 }
 
 struct Config {
